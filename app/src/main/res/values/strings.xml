@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Heartbeat</string>
+    <string name="notification_channel_name">Heartbeat Monitoring</string>
+    <string name="notification_channel_desc">Foreground monitoring of ambient audio for voice activity detection.</string>
+    <string name="foreground_notification_title">Heartbeat Listening</string>
+    <string name="foreground_notification_text">Monitoring for speech activity...</string>
+    <string name="requesting_permission_message">Requesting record audio permission...</string>
+    <string name="permission_denied_message">Microphone permission denied. Listening paused.</string>
+    <string name="notifications_permission_denied">Notification permission denied. Foreground service notification may be hidden.</string>
+</resources>
+
