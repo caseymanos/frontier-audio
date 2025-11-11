@@ -1,5 +1,8 @@
 package com.frontieraudio.heartbeat
 
+import ai.picovoice.eagle.EagleException
+import ai.picovoice.eagle.EagleProfiler
+import ai.picovoice.eagle.EagleProfilerEnrollFeedback
 import android.Manifest
 import android.content.pm.PackageManager
 import android.media.AudioFormat
@@ -7,6 +10,7 @@ import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.os.Bundle
 import android.os.SystemClock
+import android.util.Log
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -14,8 +18,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import com.frontieraudio.heartbeat.BuildConfig
+import com.frontieraudio.heartbeat.R
 import com.frontieraudio.heartbeat.audio.SpeechSegmentAssembler
-import com.frontieraudio.heartbeat.speaker.SpeakerVerifier
 import com.frontieraudio.heartbeat.speaker.VoiceProfile
 import com.frontieraudio.heartbeat.speaker.VoiceProfileStore
 import com.konovalov.vad.silero.Vad
@@ -42,12 +47,8 @@ class EnrollmentActivity : AppCompatActivity() {
     private lateinit var cancelButton: Button
 
     private val voiceProfileStore by lazy { VoiceProfileStore(applicationContext) }
-    private val speakerVerifierLazy = lazy { SpeakerVerifier(applicationContext) }
-    private val speakerVerifier: SpeakerVerifier
-        get() = speakerVerifierLazy.value
 
     private var recordingJob: Job? = null
-    private var collectedEmbeddings = mutableListOf<FloatArray>()
     private var samplesCaptured = 0
 
     private val audioPermissionLauncher = registerForActivityResult(
@@ -73,7 +74,7 @@ class EnrollmentActivity : AppCompatActivity() {
         primaryButton = findViewById(R.id.enrollmentPrimaryButton)
         cancelButton = findViewById(R.id.enrollmentCancelButton)
 
-        progressBar.max = REQUIRED_SEGMENTS
+        progressBar.max = 100
         progressBar.progress = 0
 
         primaryButton.setOnClickListener {
@@ -89,7 +90,7 @@ class EnrollmentActivity : AppCompatActivity() {
             finish()
         }
 
-        updateProgress()
+        updateProgress(0f)
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -102,13 +103,6 @@ class EnrollmentActivity : AppCompatActivity() {
         stopRecording()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        if (speakerVerifierLazy.isInitialized()) {
-            speakerVerifier.close()
-        }
-    }
-
     private fun ensurePermissionThenStart() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
             startRecording()
@@ -119,13 +113,30 @@ class EnrollmentActivity : AppCompatActivity() {
 
     private fun startRecording() {
         if (recordingJob?.isActive == true) return
-        collectedEmbeddings = mutableListOf()
+        val accessKey = try {
+            requireAccessKey()
+        } catch (iae: IllegalArgumentException) {
+            statusText.text = getString(R.string.enrollment_access_key_missing)
+            return
+        }
         samplesCaptured = 0
         statusText.text = getString(R.string.enrollment_listening_status)
         setRecordingUi(true)
-        updateProgress()
+        updateProgress(0f)
 
         recordingJob = lifecycleScope.launch(Dispatchers.IO) {
+            val profiler = try {
+                EagleProfiler.Builder()
+                    .setAccessKey(accessKey)
+                    .build(applicationContext)
+            } catch (e: EagleException) {
+                withContext(Dispatchers.Main) {
+                    statusText.text = getString(R.string.enrollment_profiler_error, e.message ?: "")
+                    setRecordingUi(false)
+                }
+                return@launch
+            }
+
             val sampleRate = SampleRate.SAMPLE_RATE_16K
             val frameSize = FrameSize.FRAME_SIZE_512
             val audioRecord = createAudioRecord(sampleRate, frameSize)
@@ -137,17 +148,16 @@ class EnrollmentActivity : AppCompatActivity() {
                 preRollDurationMs = ENROLLMENT_PREROLL_MS,
                 minSegmentDurationMs = ENROLLMENT_MIN_SEGMENT_MS
             ) { segment ->
-                val embedding = speakerVerifier.computeEmbedding(segment)
-                if (embedding != null) {
-                    collectedEmbeddings.add(embedding)
+                try {
+                    val result = profiler.enroll(segment.samples)
                     samplesCaptured += segment.samples.size
                     withContext(Dispatchers.Main) {
-                        statusText.text = getString(
-                            R.string.enrollment_segment_captured,
-                            collectedEmbeddings.size,
-                            REQUIRED_SEGMENTS
-                        )
-                        updateProgress()
+                        handleEnrollProgress(result.percentage, result.feedback)
+                    }
+                } catch (e: EagleException) {
+                    Log.w(TAG, "Enrollment frame rejected", e)
+                    withContext(Dispatchers.Main) {
+                        statusText.text = getString(R.string.enrollment_frame_error, e.message ?: "")
                     }
                 }
             }
@@ -155,7 +165,7 @@ class EnrollmentActivity : AppCompatActivity() {
             try {
                 audioRecord.startRecording()
                 var frameOffset = 0
-                while (isActive && collectedEmbeddings.size < REQUIRED_SEGMENTS) {
+                while (isActive) {
                     val read = audioRecord.read(
                         frameBuffer,
                         frameOffset,
@@ -175,23 +185,11 @@ class EnrollmentActivity : AppCompatActivity() {
                         frameOffset = 0
                     }
                 }
-
-                if (!isActive) return@launch
-
-                if (collectedEmbeddings.size >= REQUIRED_SEGMENTS) {
-                    completeEnrollment()
-                } else {
-                    withContext(Dispatchers.Main) {
-                        statusText.text = getString(R.string.enrollment_incomplete)
-                        setRecordingUi(false)
-                    }
-                }
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (t: Throwable) {
                 withContext(Dispatchers.Main) {
                     statusText.text = getString(R.string.enrollment_error_generic)
-                    setRecordingUi(false)
                 }
             } finally {
                 try {
@@ -201,34 +199,69 @@ class EnrollmentActivity : AppCompatActivity() {
                 audioRecord.release()
                 vad.close()
                 assembler.reset()
-                withContext(NonCancellable + Dispatchers.Main) {
-                    if (collectedEmbeddings.size < REQUIRED_SEGMENTS) {
+
+                val progress = withContext(Dispatchers.Main) { progressBar.progress }
+                if (progress >= 100) {
+                    val exportedProfile = exportProfile(profiler)
+                    withContext(Dispatchers.Main) {
+                        finalizeEnrollment(exportedProfile)
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        statusText.text = getString(R.string.enrollment_incomplete)
                         setRecordingUi(false)
                     }
+                    safeDeleteProfiler(profiler)
+                }
+
+                withContext(NonCancellable + Dispatchers.Main) {
                     recordingJob = null
                 }
             }
         }
     }
 
-    private suspend fun completeEnrollment() {
-        withContext(Dispatchers.Main) {
-            statusText.text = getString(R.string.enrollment_processing)
+    private suspend fun finalizeEnrollment(profile: VoiceProfile?) {
+        if (profile == null) {
+            statusText.text = getString(R.string.enrollment_error_generic)
             setRecordingUi(false)
+            return
         }
-        val profile = VoiceProfile.average(
-            embeddings = collectedEmbeddings,
-            sampleRateHz = SampleRate.SAMPLE_RATE_16K.value,
-            frameSizeSamples = FrameSize.FRAME_SIZE_512.value,
-            samplesCaptured = samplesCaptured,
-            nowMillis = System.currentTimeMillis()
-        )
-        voiceProfileStore.saveVoiceProfile(profile)
-        withContext(Dispatchers.Main) {
-            statusText.text = getString(R.string.enrollment_complete)
-            promptText.text = getString(R.string.enrollment_complete_prompt)
-            updateProgress()
-            primaryButton.text = getString(R.string.enrollment_restart)
+        withContext(Dispatchers.IO) {
+            voiceProfileStore.saveVoiceProfile(profile)
+        }
+        statusText.text = getString(R.string.enrollment_complete)
+        promptText.text = getString(R.string.enrollment_complete_prompt)
+        updateProgress(100f)
+        primaryButton.text = getString(R.string.enrollment_restart)
+        setRecordingUi(false)
+    }
+
+    private fun exportProfile(profiler: EagleProfiler): VoiceProfile? {
+        return try {
+            val profile = profiler.export()
+            val bytes = profile.bytes
+            profile.delete()
+            VoiceProfile(
+                profileBytes = bytes,
+                createdAtMillis = System.currentTimeMillis(),
+                sampleRateHz = profiler.sampleRate,
+                minEnrollSamples = profiler.minEnrollSamples,
+                engineVersion = profiler.version,
+                samplesCaptured = samplesCaptured
+            )
+        } catch (e: EagleException) {
+            Log.e(TAG, "Unable to export Eagle profile", e)
+            null
+        } finally {
+            safeDeleteProfiler(profiler)
+        }
+    }
+
+    private fun safeDeleteProfiler(profiler: EagleProfiler) {
+        try {
+            profiler.delete()
+        } catch (_: Throwable) {
         }
     }
 
@@ -246,13 +279,27 @@ class EnrollmentActivity : AppCompatActivity() {
         cancelButton.isEnabled = true
     }
 
-    private fun updateProgress() {
-        progressBar.progress = collectedEmbeddings.size.coerceAtMost(REQUIRED_SEGMENTS)
-        progressText.text = getString(
-            R.string.enrollment_progress,
-            collectedEmbeddings.size,
-            REQUIRED_SEGMENTS
-        )
+    private fun handleEnrollProgress(percentage: Float, feedback: EagleProfilerEnrollFeedback) {
+        updateProgress(percentage)
+        val statusMessage = when (feedback) {
+            EagleProfilerEnrollFeedback.AUDIO_OK -> getString(R.string.enrollment_feedback_audio_ok)
+            EagleProfilerEnrollFeedback.AUDIO_TOO_SHORT -> getString(R.string.enrollment_feedback_too_short)
+            EagleProfilerEnrollFeedback.UNKNOWN_SPEAKER -> getString(R.string.enrollment_feedback_unknown_speaker)
+            EagleProfilerEnrollFeedback.NO_VOICE_FOUND -> getString(R.string.enrollment_feedback_no_voice)
+            EagleProfilerEnrollFeedback.QUALITY_ISSUE -> getString(R.string.enrollment_feedback_quality_issue)
+        }
+        statusText.text = getString(R.string.enrollment_progress_status, statusMessage, percentage.toInt())
+    }
+
+    private fun updateProgress(percentage: Float) {
+        progressBar.progress = percentage.toInt().coerceIn(0, 100)
+        progressText.text = getString(R.string.enrollment_progress_percent, percentage.toInt())
+    }
+
+    private fun requireAccessKey(): String {
+        val accessKey = BuildConfig.PICOVOICE_ACCESS_KEY
+        require(accessKey.isNotBlank())
+        return accessKey
     }
 
     private fun createAudioRecord(sampleRate: SampleRate, frameSize: FrameSize): AudioRecord {
@@ -286,7 +333,7 @@ class EnrollmentActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val REQUIRED_SEGMENTS = 3
+        private const val TAG = "EnrollmentActivity"
         private const val ENROLLMENT_MIN_SEGMENT_MS = 800
         private const val ENROLLMENT_PREROLL_MS = 240
         private const val VAD_SPEECH_MS = 60

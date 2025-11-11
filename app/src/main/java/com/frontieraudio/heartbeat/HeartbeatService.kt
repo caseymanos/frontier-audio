@@ -215,10 +215,10 @@ class HeartbeatService : Service() {
                 val validUntil = nowMs + config.positiveRetentionMillis
                 activeVerification = ActiveVerificationState(
                     similarity = result.similarity,
-                    embedding = result.embedding,
+                    scores = result.scores,
                     validUntilMs = validUntil
                 )
-                emitVerifiedSegment(segment, result.similarity, result.embedding)
+                emitVerifiedSegment(segment, result.similarity, result.scores)
                 Log.i(
                     TAG,
                     "Stage2 accepted segment id=${segment.id} similarity=${String.format(Locale.US, "%.3f", result.similarity)}"
@@ -245,12 +245,12 @@ class HeartbeatService : Service() {
         }
     }
 
-    private suspend fun emitVerifiedSegment(segment: SpeechSegment, similarity: Float, embedding: FloatArray) {
+    private suspend fun emitVerifiedSegment(segment: SpeechSegment, similarity: Float, scores: FloatArray) {
         verifiedSegmentsInternal.emit(
             VerifiedSpeechSegment(
                 segment = segment,
                 similarity = similarity,
-                embedding = embedding,
+                scores = scores,
                 verifiedAtMillis = System.currentTimeMillis()
             )
         )
@@ -506,7 +506,7 @@ class HeartbeatService : Service() {
 
     private data class ActiveVerificationState(
         val similarity: Float,
-        val embedding: FloatArray,
+        val scores: FloatArray,
         val validUntilMs: Long
     )
 }

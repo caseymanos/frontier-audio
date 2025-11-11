@@ -12,13 +12,13 @@ class VoiceProfileStore(context: Context) {
     private val dataStore = context.voiceProfileDataStore
 
     val voiceProfileFlow: Flow<VoiceProfile?> = dataStore.data.map { prefs ->
-        val embeddingString = prefs[stringPreferencesKey(VoiceProfile.KEY_EMBEDDING)] ?: return@map null
         val snapshot = mapOf(
             VoiceProfile.KEY_ID to (prefs[stringPreferencesKey(VoiceProfile.KEY_ID)] ?: ""),
-            VoiceProfile.KEY_EMBEDDING to embeddingString,
+            VoiceProfile.KEY_PROFILE_BYTES to (prefs[stringPreferencesKey(VoiceProfile.KEY_PROFILE_BYTES)] ?: return@map null),
+            VoiceProfile.KEY_CREATED_AT to (prefs[stringPreferencesKey(VoiceProfile.KEY_CREATED_AT)] ?: return@map null),
             VoiceProfile.KEY_SAMPLE_RATE to (prefs[stringPreferencesKey(VoiceProfile.KEY_SAMPLE_RATE)] ?: return@map null),
-            VoiceProfile.KEY_FRAME_SIZE to (prefs[stringPreferencesKey(VoiceProfile.KEY_FRAME_SIZE)] ?: return@map null),
-            VoiceProfile.KEY_UPDATED_AT to (prefs[stringPreferencesKey(VoiceProfile.KEY_UPDATED_AT)] ?: return@map null),
+            VoiceProfile.KEY_MIN_ENROLL_SAMPLES to (prefs[stringPreferencesKey(VoiceProfile.KEY_MIN_ENROLL_SAMPLES)] ?: return@map null),
+            VoiceProfile.KEY_ENGINE_VERSION to (prefs[stringPreferencesKey(VoiceProfile.KEY_ENGINE_VERSION)] ?: ""),
             VoiceProfile.KEY_SAMPLE_COUNT to (prefs[stringPreferencesKey(VoiceProfile.KEY_SAMPLE_COUNT)] ?: "0")
         )
         VoiceProfile.fromPreferences(snapshot)
@@ -44,10 +44,11 @@ class VoiceProfileStore(context: Context) {
     private fun clearExisting(prefs: androidx.datastore.preferences.core.MutablePreferences) {
         listOf(
             VoiceProfile.KEY_ID,
-            VoiceProfile.KEY_EMBEDDING,
+            VoiceProfile.KEY_PROFILE_BYTES,
+            VoiceProfile.KEY_CREATED_AT,
             VoiceProfile.KEY_SAMPLE_RATE,
-            VoiceProfile.KEY_FRAME_SIZE,
-            VoiceProfile.KEY_UPDATED_AT,
+            VoiceProfile.KEY_MIN_ENROLL_SAMPLES,
+            VoiceProfile.KEY_ENGINE_VERSION,
             VoiceProfile.KEY_SAMPLE_COUNT
         ).forEach { keyName ->
             prefs.remove(stringPreferencesKey(keyName))

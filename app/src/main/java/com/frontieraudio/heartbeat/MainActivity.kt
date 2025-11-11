@@ -165,7 +165,12 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             voiceProfileStore.voiceProfileFlow.collectLatest { profile ->
                 profileStatusMessage = if (profile != null) {
-                    getString(R.string.profile_enrolled)
+                    val details = getString(
+                        R.string.profile_enrolled_details,
+                        profile.engineVersion.ifBlank { "-" },
+                        profile.samplesCaptured
+                    )
+                    listOf(getString(R.string.profile_enrolled), details).joinToString(separator = "\n")
                 } else {
                     getString(R.string.profile_not_enrolled)
                 }

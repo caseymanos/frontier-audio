@@ -1,3 +1,8 @@
+import org.gradle.api.GradleException
+
+val picovoiceAccessKey = (project.findProperty("PICOVOICE_ACCESS_KEY") as? String)
+    ?: throw GradleException("PICOVOICE_ACCESS_KEY property is not set. Add it to gradle.properties (or use -PPICOVOICE_ACCESS_KEY=...).")
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -15,6 +20,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        val sanitizedAccessKey = picovoiceAccessKey.replace("\"", "\\\"")
+        buildConfigField("String", "PICOVOICE_ACCESS_KEY", "\"$sanitizedAccessKey\"")
     }
 
     buildTypes {
@@ -53,7 +60,7 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 
     implementation("com.github.gkonovalov.android-vad:silero:2.0.10")
-    implementation("com.alphacephei:vosk-android:0.3.45")
+    implementation("ai.picovoice:eagle-android:1.0.1")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
