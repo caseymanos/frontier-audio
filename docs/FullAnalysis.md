@@ -1,3 +1,60 @@
+# Stage 1 Profiling Results
+
+**Date:** November 10, 2025  
+**Device:** Samsung Galaxy Tab S6 Lite (SM-P620)  
+**Build:** samsung/gta4xlswifixx/gta4xlswifi:15/AP3A.240905.015.A2/P620XXS7BYH2  
+**Android Version:** 15  
+**Test Duration:** 2 minutes (12 samples at 10-second intervals)
+
+## Performance Metrics
+
+### CPU Usage
+- **Average CPU:** ~0% (rounded from < 0.5%)
+- **User CPU:** 0%
+- **Kernel CPU:** 0%
+- **Status:** ✅ **PASSED** - Well below < 2% target
+
+All 12 samples over 2 minutes showed 0% CPU usage, indicating the VAD processing is extremely efficient during idle listening state.
+
+### Memory Usage
+- **Total PSS:** 96.6 MB
+- **Java Heap:** 16.3 MB (37.9 MB RSS)
+- **Native Heap:** 27.2 MB (28.7 MB RSS) - ONNX Runtime
+- **Total RSS:** 172.1 MB
+- **Swap:** 0.2 MB
+- **Status:** ✅ **PASSED** - Memory stable, no leaks detected
+
+### Service Behavior
+- **Foreground Service:** Active and stable
+- **Notification:** Persistent (ID: 1001, type: MICROPHONE)
+- **VAD Detections:** 41 speech events logged during test period
+- **Service Uptime:** Continuous operation, no crashes
+- **Permissions:** RECORD_AUDIO and POST_NOTIFICATIONS granted
+
+## Observations
+
+1. **Exceptional CPU Efficiency:** The Silero VAD model running through ONNX Runtime shows negligible CPU usage (< 0.5%, rounded to 0% by Android). This far exceeds the < 2% target and validates the Stage 1 architecture.
+
+2. **Stable Memory Profile:** Memory usage remained flat throughout the 2-minute test. Native heap (ONNX Runtime) is stable at ~27 MB, indicating no memory leaks in the inference loop.
+
+3. **VAD Sensitivity:** The detector logged 41 speech events, suggesting it's actively processing audio and responding to ambient sounds/speech. The gate is working as intended.
+
+4. **Service Reliability:** The foreground service remained active throughout testing with no termination or crashes. The persistent notification ensures Android won't kill the process.
+
+## Validation Status
+
+**Stage 1 Success Criteria Met:**
+- ✅ CPU usage < 2% (actual: ~0%)
+- ✅ Memory stable (no leaks)
+- ✅ Foreground service persistent
+- ✅ VAD detecting speech events
+- ✅ No crashes or service termination
+
+**Ready for Stage 2 Integration:** Speaker verification can now be added with confidence that the Stage 1 gate is efficient and stable.
+
+---
+
+# Original Architectural Guide
 
 An Architectural Guide: Building a Selective, Always-On Audio Application on Android
 

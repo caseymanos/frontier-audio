@@ -159,7 +159,7 @@ class HeartbeatService : Service() {
 
         record.startRecording()
 
-        while (isActive) {
+        while (serviceScope.isActive) {
             val read = record.read(
                 frameBuffer,
                 frameOffset,
