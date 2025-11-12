@@ -1,0 +1,89 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║                    METRICS QUICK REFERENCE CARD                          ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+📱 HOW TO USE
+─────────────
+1. Speak some phrases (with voice profile enrolled)
+2. Tap purple "Show Metrics" button (below live transcript)
+3. View timing statistics
+
+📊 KEY METRICS EXPLAINED
+────────────────────────
+TTCT (Total Time)    End-to-end latency from speech → transcript
+RTF (Real-Time Factor)   Processing time ÷ Audio duration
+                         < 1.0 = Good (faster than real-time)
+                         > 1.0 = Slow (slower than real-time)
+Words/Second         Speaking rate (typical: 2-4 words/sec)
+Pass Rate            % of verifications that succeeded
+
+⏱️ STAGE BREAKDOWN
+──────────────────
+Stage 1 (VAD)         Voice detection          20-100ms typical
+Stage 2 (Verify)      Speaker verification     50-200ms typical  
+Stage 3 (Transcribe)  Cartesia API             200-800ms typical
+
+🔍 DEBUGGING
+────────────
+View metrics logs:
+  adb logcat | grep '📊'
+
+Full pipeline:
+  adb logcat | grep -E '📊|Stage[123]|segment ready|FINAL'
+
+Check completions:
+  adb logcat | grep 'METRICS COMPLETE'
+
+📈 GOOD PERFORMANCE INDICATORS
+───────────────────────────────
+✅ RTF < 0.6x          System is very responsive
+✅ Pass Rate > 80%     Voice verification working well
+✅ Total < 500ms       Fast transcription for short phrases
+✅ Stage 3 < 600ms     Good network/API performance
+
+⚠️  WARNING SIGNS
+─────────────────
+⚠️  RTF > 1.0x         Processing slower than real-time
+⚠️  Pass Rate < 50%    Re-enroll voice profile
+⚠️  Stage 3 > 1500ms   Check internet connection
+⚠️  Total > 2000ms     System performance issue
+
+🔧 TROUBLESHOOTING
+──────────────────
+No metrics showing?
+  → Check "Debug Info" in metrics display
+  → Look for "Active tracking: X"
+  → Review logs with: adb logcat | grep '📊'
+
+Active tracking but no completions?
+  → Transcriptions started but not finishing
+  → Check Cartesia/network logs
+  → Try bypass mode to isolate Stage 3
+
+Warnings "no active metrics for segment"?
+  → Segment ID mismatch
+  → Check logs show same segment ID throughout
+
+📁 DOCUMENTATION
+────────────────
+METRICS_IMPLEMENTATION.md   Full technical docs
+METRICS_QUICK_START.md      User guide
+METRICS_DEBUG.md            Detailed debugging guide
+METRICS_FIX_SUMMARY.md      Recent fix explanation
+
+🎯 QUICK TEST
+─────────────
+1. Enable bypass mode (for testing)
+2. Say "Hello, this is a test"
+3. Wait 2-3 seconds
+4. Tap "Show Metrics"
+5. Should see completed metrics with ~500ms latency
+
+Expected logs:
+  📊 Started metrics tracking: segment=X
+  📊 Segment X: VAD complete
+  📊 Segment X: Stage2 complete
+  📊 Segment X: Stage3 start
+  📊 ✅ METRICS COMPLETE: id=Y, latency=XXXms, RTF=X.XXx
+
+═══════════════════════════════════════════════════════════════════════════

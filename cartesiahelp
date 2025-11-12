@@ -1,0 +1,92 @@
+stt/websocket
+This endpoint creates a bidirectional WebSocket connection for real-time speech transcription.
+
+Our STT endpoint enables sending in a stream of audio as bytes, and provides transcription results as they become available.
+
+Usage Pattern:
+
+Connect to the WebSocket with appropriate query parameters
+Send audio chunks as binary WebSocket messages in the specified encoding format
+Receive transcription messages as JSON with word-level timestamps
+Send finalize as a text message to flush any remaining audio (receives flush_done acknowledgment)
+Send done as a text message to close the session cleanly (receives done acknowledgment and closes)
+Performance Recommendation: For best performance, it is recommended to resample audio before streaming and send audio chunks in pcm_s16le format at 16kHz sample rate.
+
+Pricing: Speech-to-text streaming is priced at 1 credit per 1 second of audio streamed in.
+
+Concurrency: STT has a dedicated concurrency limit, which determines the maximum number of active WebSocket connections you can have at any time. If you exceed your concurrency limit, new connections will be rejected with a 429 error. Idle WebSocket connections are automatically closed after 3 minutes of inactivity (no audio being streamed).
+
+
+Security Schemes
+X-API-Key
+
+string
+required
+API key passed in header
+
+enter X-API-Key
+api_key
+
+string
+required
+API key passed as query parameter (useful for browser WebSockets)
+
+enter api_key
+
+Path Parameters
+model
+
+string
+required
+ID of the model to use for transcription. Use 'ink-whisper' for the latest Cartesia Whisper model.
+
+enter model
+language
+
+string
+required
+The language of the input audio in ISO-639-1 format. Defaults to en.
+
+Supported languages: en, zh, de, es, ru, ko, fr, ja, pt, tr, pl, ca, nl, ar, sv, it, id, hi, fi, vi, he, uk, el, ms, cs, ro, da, hu, ta, no, th, ur, hr, bg, lt, la, mi, ml, cy, sk, te, fa, lv, bn, sr, az, sl, kn, et, mk, br, eu, is, hy, ne, mn, bs, kk, sq, sw, gl, mr, pa, si, km, sn, yo, so, af, oc, ka, be, tg, sd, gu, am, yi, lo, uz, fo, ht, ps, tk, nn, mt, sa, lb, my, bo, tl, mg, as, tt, haw, ln, ha, ba, jw, su, yue
+
+enter language
+encoding
+
+string
+required
+The encoding format of the audio data. This determines how the server interprets the raw binary audio data you send.
+
+Required field - you must specify the encoding format that matches your audio data. We recommend using pcm_s16le for best performance.
+
+enter encoding
+sample_rate
+
+string
+required
+The sample rate of the audio in Hz.
+
+Required field - must match the actual sample rate of your audio data. We recommend using 16000 for best performance.
+
+enter sample_rate
+min_volume
+
+string
+required
+Volume threshold for voice activity detection. Audio below this threshold will be considered silence.
+Range: 0.0-1.0. Higher values = more aggressive filtering of quiet speech.
+
+enter min_volume
+max_silence_duration_secs
+
+string
+required
+Maximum duration of silence (in seconds) before the system considers the utterance complete and triggers endpointing.
+Higher values allow for longer pauses within utterances.
+
+enter max_silence_duration_secs
+api_key
+
+string
+required
+You can specify this instead of the X-API-Key header. This is particularly useful for use in the browser, where WebSockets do not support headers. You do not need to specify this if you are passing the header.
+

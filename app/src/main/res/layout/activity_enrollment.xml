@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true">
@@ -42,6 +43,43 @@
             app:layout_constraintTop_toBottomOf="@id/enrollmentPrompt"
             app:layout_constraintEnd_toEndOf="parent" />
 
+        <TextView
+            android:id="@+id/enrollmentWarning"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_enrollment_tip"
+            android:paddingStart="16dp"
+            android:paddingTop="12dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="12dp"
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/enrollmentStatus"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="Audio enhancements detected. Disable AGC/NR for best accuracy."
+            tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/enrollmentTip"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_enrollment_tip"
+            android:paddingStart="16dp"
+            android:paddingTop="12dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="12dp"
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/enrollmentWarning"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="Speak in full phrases so Eagle can capture your voice." />
+
         <ProgressBar
             android:id="@+id/enrollmentProgressBar"
             style="@android:style/Widget.ProgressBar.Horizontal"
@@ -51,7 +89,7 @@
             android:max="100"
             android:progress="0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/enrollmentStatus"
+            app:layout_constraintTop_toBottomOf="@id/enrollmentTip"
             app:layout_constraintEnd_toEndOf="parent" />
 
         <TextView
@@ -64,6 +102,17 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/enrollmentProgressBar" />
 
+        <TextView
+            android:id="@+id/enrollmentVoicedTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text=""
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/enrollmentProgressText"
+            tools:text="Voiced time: 0.0s / 18s" />
+
         <LinearLayout
             android:id="@+id/enrollmentButtonRow"
             android:layout_width="0dp"
@@ -72,7 +121,7 @@
             android:gravity="center"
             android:orientation="horizontal"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/enrollmentProgressText"
+            app:layout_constraintTop_toBottomOf="@id/enrollmentVoicedTime"
             app:layout_constraintEnd_toEndOf="parent">
 
             <Button

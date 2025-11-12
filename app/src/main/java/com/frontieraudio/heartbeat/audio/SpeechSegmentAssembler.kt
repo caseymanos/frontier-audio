@@ -7,7 +7,6 @@ class SpeechSegmentAssembler(
     private val sampleRateHz: Int,
     private val frameSizeSamples: Int,
     preRollDurationMs: Int,
-    minSegmentDurationMs: Int,
     private val onSegmentReady: suspend (SpeechSegment) -> Unit,
 ) {
 
@@ -17,8 +16,8 @@ class SpeechSegmentAssembler(
         ((preRollDurationMs.toLong() * sampleRateHz) / (frameSizeSamples * 1_000L))
             .toInt()
             .coerceAtLeast(1)
-    private val minSegmentFrameCount: Int =
-        ((minSegmentDurationMs.toLong() * sampleRateHz) / (frameSizeSamples * 1_000L))
+    private val streamingChunkFrameCount: Int =
+        ((STREAMING_CHUNK_MS.toLong() * sampleRateHz) / (frameSizeSamples * 1_000L))
             .toInt()
             .coerceAtLeast(1)
 
@@ -31,7 +30,13 @@ class SpeechSegmentAssembler(
         if (isSpeech) {
             ensureSegmentStarted(frameTimestampNs)
             activeFrames?.add(frame)
+
+            // If chunk is full, emit it
+            if (activeFrames?.size == streamingChunkFrameCount) {
+                emitChunk(frameTimestampNs)
+            }
         } else {
+            // If there was an active segment, finish it by emitting the last partial chunk
             if (activeFrames != null) {
                 finishSegment(frameTimestampNs)
             }
@@ -64,16 +69,35 @@ class SpeechSegmentAssembler(
         preRollFrames.addLast(frame)
     }
 
+    private suspend fun emitChunk(chunkEndTimestampNs: Long) {
+        val frames = activeFrames ?: return
+        Log.d(TAG, "Emitting streaming chunk with ${frames.size} frames")
+
+        // Create segment from the current frames
+        val segment = createSegment(frames, chunkEndTimestampNs)
+        onSegmentReady(segment)
+
+        // Reset for the next chunk
+        activeFrames = mutableListOf()
+        segmentStartNs = chunkEndTimestampNs
+    }
+
     private suspend fun finishSegment(frameTimestampNs: Long) {
         val frames = activeFrames ?: return
-        activeFrames = null
+        activeFrames = null // End the segment
 
-        if (minSegmentFrameCount > 0 && frames.size < minSegmentFrameCount) {
-            Log.d(TAG, "Dropping short Stage1 segment frames=${frames.size} (min=$minSegmentFrameCount)")
+        if (frames.isEmpty()) {
+            Log.d(TAG, "finishSegment called with no frames, ignoring.")
             return
         }
 
-        Log.d(TAG, "Completing Stage1 segment with ${frames.size} frames")
+        // Emit the final partial chunk
+        Log.d(TAG, "Finishing segment with final partial chunk of ${frames.size} frames")
+        val segment = createSegment(frames, frameTimestampNs)
+        onSegmentReady(segment)
+    }
+
+    private fun createSegment(frames: List<ShortArray>, endTimestampNs: Long): SpeechSegment {
         val totalSamples = frames.sumOf { it.size }
         val merged = ShortArray(totalSamples)
         var offset = 0
@@ -83,19 +107,18 @@ class SpeechSegmentAssembler(
         }
 
         val segmentId = ++segmentIdCounter
-        val segment = SpeechSegment(
+        return SpeechSegment(
             id = segmentId,
             startTimestampNs = segmentStartNs,
-            endTimestampNs = frameTimestampNs,
+            endTimestampNs = endTimestampNs,
             sampleRateHz = sampleRateHz,
             frameSizeSamples = frameSizeSamples,
             samples = merged
         )
-
-        onSegmentReady(segment)
     }
 
     companion object {
         private const val TAG = "SpeechSegmentAssembler"
+        private const val STREAMING_CHUNK_MS = 500
     }
 }

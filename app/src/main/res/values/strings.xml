@@ -27,11 +27,18 @@
     <string name="enrollment_frame_error">Captured audio frame rejected (%1$s)</string>
     <string name="enrollment_progress_status">%1$s (%2$d%%)</string>
     <string name="enrollment_progress_percent">Enrollment progress: %1$d%%</string>
+    <string name="enrollment_voiced_time">Voiced time: %1$.1fs / %2$.0fs</string>
+    <string name="enrollment_need_more_time">Keep speaking — about %1$.0f more seconds helps Eagle lock on to your voice.</string>
     <string name="enrollment_feedback_audio_ok">Captured sample</string>
     <string name="enrollment_feedback_too_short">Sample too short - keep speaking</string>
     <string name="enrollment_feedback_unknown_speaker">Voice mismatch detected</string>
     <string name="enrollment_feedback_no_voice">No voice detected</string>
     <string name="enrollment_feedback_quality_issue">Audio quality issue detected</string>
+    <string name="enrollment_tip_audio_too_short">Hold each phrase for another second or two before pausing.</string>
+    <string name="enrollment_tip_no_voice">Move closer to the mic and limit background noise so we only capture your voice.</string>
+    <string name="enrollment_tip_quality_issue">We\'re hearing muffled or echoing audio - try a quieter space or speak directly toward the mic.</string>
+    <string name="enrollment_tip_unknown_speaker">Stay consistent - use the same voice that started this enrollment.</string>
+    <string name="enrollment_warning_audio_effects">Device audio enhancements detected (%1$s). Disable AGC, noise suppression, or voice effects for best accuracy.</string>
     <string name="open_enrollment">Open Eagle Enrollment</string>
     <string name="clear_enrollment">Clear Stored Profile</string>
     <string name="verification_settings_title">Eagle Verification Settings</string>
@@ -43,5 +50,22 @@
     <string name="profile_enrolled">Eagle profile ready for selective transcription.</string>
     <string name="profile_enrolled_details">Engine %1$s · %2$d samples captured</string>
     <string name="profile_not_enrolled">Stage 2 requires an Eagle profile. Enroll your voice to continue.</string>
+    <string name="verification_listening">Stage 2: Listening</string>
+    <string name="verification_active">Stage 2: Verified</string>
+    <string name="verification_similarity">Similarity: %1$.2f</string>
+    <string name="verification_countdown">Expires in: %1$.1f s</string>
+    <string name="verification_expired">Expired</string>
+    <string name="diagnostics_audio_effects">Audio effects active: %1$s</string>
+    <string name="diagnostics_segment_metrics">Signal %1$.1f dBFS • Clipping %2$.1f%% • Speech %3$.0f%%</string>
+    <string name="diagnostics_warnings_prefix">Warnings: %1$s</string>
+    <string name="calibration_button_start">Run Calibration</string>
+    <string name="calibration_button_cancel">Cancel Calibration</string>
+    <string name="calibration_button_apply">Apply Suggested (%1$.2f)</string>
+    <string name="calibration_status_start">Calibration started. Capture %1$d impostor samples using a different speaker.</string>
+    <string name="calibration_status_progress">Calibration: collected %1$d/%2$d impostor samples (last %3$.2f)</string>
+    <string name="calibration_status_complete">Impostor mean %1$.2f, sigma %2$.2f -> suggested threshold %3$.2f.</string>
+    <string name="calibration_status_applied">Applied threshold %1$.2f. Monitor verification and fine-tune if needed.</string>
+    <string name="calibration_status_cancelled">Calibration cancelled.</string>
+    <string name="calibration_status_matched">Matched speaker detected (similarity %1$.2f). Use a different voice for calibration.</string>
+    <string name="enrollment_done">Done</string>
 </resources>
-

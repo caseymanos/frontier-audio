@@ -1,137 +1,475 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8" ?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp">
+    android:fillViewport="true"
+>
+
+<androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="24dp"
+    >
 
     <TextView
-        android:id="@+id/statusText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/foreground_notification_text"
-        android:textAppearance="?attr/textAppearanceBodyLarge"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+            android:id="@+id/statusText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/foreground_notification_text"
+            android:textAppearance="?attr/textAppearanceBodyLarge"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+        />
+
+    <androidx.cardview.widget.CardView
+            android:id="@+id/verificationCard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            app:cardCornerRadius="12dp"
+            app:cardUseCompatPadding="true"
+            app:cardBackgroundColor="@color/verification_inactive"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/statusText"
+        >
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp"
+            >
+
+            <TextView
+                    android:id="@+id/verificationStatusText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/verification_listening"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:textColor="@android:color/black"
+                    tools:text="Stage 2: Listening"
+                />
+
+            <TextView
+                    android:id="@+id/verificationSimilarityText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="@android:color/black"
+                    tools:text="Similarity: 0.00"
+                />
+
+            <TextView
+                    android:id="@+id/verificationCountdownText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/verification_expired"
+                    android:textColor="@android:color/black"
+                    tools:text="Expires in: 5.0 s"
+                />
+
+            <TextView
+                    android:id="@+id/verificationDiagnosticsText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textAppearance="?attr/textAppearanceBodySmall"
+                    android:textColor="@color/diagnostic_neutral"
+                    android:visibility="gone"
+                    tools:text="Signal -35.0 dBFS • Clipping 0.0% • Speech 82%"
+                    tools:visibility="visible"
+                />
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- Stage 3: Transcription Results -->
+    <androidx.cardview.widget.CardView
+            android:id="@+id/transcriptionCard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            app:cardCornerRadius="12dp"
+            app:cardUseCompatPadding="true"
+            app:cardBackgroundColor="@android:color/white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/debugButtonsLayout"
+        >
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp"
+            >
+
+            <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Stage 3: Cloud Transcription"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:textColor="@android:color/black"
+                    android:textStyle="bold"
+                />
+
+            <TextView
+                    android:id="@+id/transcriptionStatusText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Waiting for verified speech..."
+                    android:textAppearance="?attr/textAppearanceBodySmall"
+                    android:textColor="@android:color/darker_gray"
+                />
+
+            <TextView
+                    android:id="@+id/transcriptionResultText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:textColor="@android:color/black"
+                    android:visibility="gone"
+                    tools:text="Transcription: Hello, this is a test"
+                    tools:visibility="visible"
+                />
+
+            <TextView
+                    android:id="@+id/locationText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textAppearance="?attr/textAppearanceBodySmall"
+                    android:textColor="@android:color/darker_gray"
+                    android:visibility="gone"
+                    tools:text="Location: 37.7749°N, 122.4194°W"
+                    tools:visibility="visible"
+                />
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- Live Transcript Display -->
+    <androidx.cardview.widget.CardView
+            android:id="@+id/liveTranscriptCard"
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardUseCompatPadding="true"
+            app:cardBackgroundColor="@android:color/white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/transcriptionCard"
+        >
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="12dp"
+            >
+
+            <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Live Transcript (Your Voice Only)"
+                    android:textAppearance="?attr/textAppearanceBodySmall"
+                    android:textColor="@android:color/darker_gray"
+                    android:textStyle="bold"
+                />
+
+            <ScrollView
+                    android:id="@+id/liveTranscriptScrollView"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:layout_marginTop="4dp"
+                    android:background="@android:color/black"
+                    android:fadingEdge="vertical"
+                    android:fadingEdgeLength="20dp"
+                    android:requiresFadingEdge="vertical"
+                >
+
+                <TextView
+                        android:id="@+id/liveTranscriptText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="8dp"
+                        android:textColor="#00FF00"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:fontFamily="monospace"
+                        android:text=""
+                        android:gravity="bottom"
+                    />
+
+            </ScrollView>
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- Metrics Display Button and ScrollView -->
+    <Button
+            android:id="@+id/metricsButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Show Metrics"
+            android:backgroundTint="#9C27B0"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/liveTranscriptCard"
+        />
+
+    <ScrollView
+            android:id="@+id/metricsScrollView"
+            android:layout_width="0dp"
+            android:layout_height="200dp"
+            android:layout_marginTop="8dp"
+            android:visibility="gone"
+            android:background="@android:color/white"
+            android:padding="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/metricsButton"
+        >
+        <TextView
+                android:id="@+id/metricsDisplayText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?attr/textAppearanceBodySmall"
+                android:fontFamily="monospace"
+                android:textIsSelectable="true"
+                android:textColor="@android:color/black"
+            />
+    </ScrollView>
 
     <Button
-        android:id="@+id/openEnrollmentButton"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="@string/open_enrollment"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/statusText" />
+            android:id="@+id/openEnrollmentButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/open_enrollment"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/verificationCard"
+        />
 
     <Button
-        android:id="@+id/clearEnrollmentButton"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:text="@string/clear_enrollment"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/openEnrollmentButton" />
+            android:id="@+id/clearEnrollmentButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/clear_enrollment"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/openEnrollmentButton"
+        />
 
     <TextView
-        android:id="@+id/verificationHeader"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="@string/verification_settings_title"
-        android:textAppearance="?attr/textAppearanceTitleSmall"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/clearEnrollmentButton" />
+            android:id="@+id/verificationHeader"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/verification_settings_title"
+            android:textAppearance="?attr/textAppearanceTitleSmall"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/clearEnrollmentButton"
+        />
 
     <TextView
-        android:id="@+id/thresholdLabel"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/threshold_label"
-        android:textAppearance="?attr/textAppearanceBodyMedium"
-        app:layout_constraintEnd_toStartOf="@id/thresholdValue"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/verificationHeader" />
+            android:id="@+id/thresholdLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/threshold_label"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            app:layout_constraintEnd_toStartOf="@id/thresholdValue"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/verificationHeader"
+        />
 
     <TextView
-        android:id="@+id/thresholdValue"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:text="@string/threshold_value_placeholder"
-        android:textAppearance="?attr/textAppearanceBodyMedium"
-        app:layout_constraintBaseline_toBaselineOf="@id/thresholdLabel"
-        app:layout_constraintEnd_toEndOf="parent" />
+            android:id="@+id/thresholdValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="@string/threshold_value_placeholder"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            app:layout_constraintBaseline_toBaselineOf="@id/thresholdLabel"
+            app:layout_constraintEnd_toEndOf="parent"
+        />
 
     <SeekBar
-        android:id="@+id/thresholdSeekBar"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/thresholdLabel" />
+            android:id="@+id/thresholdSeekBar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/thresholdLabel"
+        />
+
+    <Button
+            android:id="@+id/calibrationButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/calibration_button_start"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/thresholdSeekBar"
+        />
 
     <TextView
-        android:id="@+id/retentionLabel"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="@string/retention_label"
-        android:textAppearance="?attr/textAppearanceBodyMedium"
-        app:layout_constraintEnd_toStartOf="@id/retentionValue"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/thresholdSeekBar" />
+            android:id="@+id/calibrationStatus"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:textColor="@color/diagnostic_neutral"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/calibrationButton"
+            tools:text="Calibration: collected 2/8 impostor samples (last 0.31)"
+            tools:visibility="visible"
+        />
 
     <TextView
-        android:id="@+id/retentionValue"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:text="@string/duration_value_placeholder"
-        android:textAppearance="?attr/textAppearanceBodyMedium"
-        app:layout_constraintBaseline_toBaselineOf="@id/retentionLabel"
-        app:layout_constraintEnd_toEndOf="parent" />
+            android:id="@+id/retentionLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/retention_label"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            app:layout_constraintEnd_toStartOf="@id/retentionValue"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/calibrationStatus"
+        />
+
+    <TextView
+            android:id="@+id/retentionValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="@string/duration_value_placeholder"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            app:layout_constraintBaseline_toBaselineOf="@id/retentionLabel"
+            app:layout_constraintEnd_toEndOf="parent"
+        />
 
     <SeekBar
-        android:id="@+id/retentionSeekBar"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/retentionLabel" />
+            android:id="@+id/retentionSeekBar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/retentionLabel"
+        />
 
     <TextView
-        android:id="@+id/cooldownLabel"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="@string/cooldown_label"
-        android:textAppearance="?attr/textAppearanceBodyMedium"
-        app:layout_constraintEnd_toStartOf="@id/cooldownValue"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/retentionSeekBar" />
+            android:id="@+id/cooldownLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/cooldown_label"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            app:layout_constraintEnd_toStartOf="@id/cooldownValue"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/retentionSeekBar"
+        />
 
     <TextView
-        android:id="@+id/cooldownValue"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:text="@string/duration_value_placeholder"
-        android:textAppearance="?attr/textAppearanceBodyMedium"
-        app:layout_constraintBaseline_toBaselineOf="@id/cooldownLabel"
-        app:layout_constraintEnd_toEndOf="parent" />
+            android:id="@+id/cooldownValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="@string/duration_value_placeholder"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            app:layout_constraintBaseline_toBaselineOf="@id/cooldownLabel"
+            app:layout_constraintEnd_toEndOf="parent"
+        />
 
     <SeekBar
-        android:id="@+id/cooldownSeekBar"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cooldownLabel"
-        app:layout_constraintBottom_toBottomOf="parent" />
+            android:id="@+id/cooldownSeekBar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cooldownLabel"
+        />
+
+    <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/bypassVerificationSwitch"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Bypass Speaker Verification (Test Mode)"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="#FF9800"
+            android:checked="false"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cooldownSeekBar"
+        />
+
+    <TextView
+            android:id="@+id/bypassWarningText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="⚠️ When enabled, all detected speech will be transcribed without speaker verification"
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:textColor="#FF5722"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/bypassVerificationSwitch"
+        />
+
+    <LinearLayout
+            android:id="@+id/debugButtonsLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/bypassWarningText"
+        >
+
+        <Button
+                android:id="@+id/debugButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:text="Debug Transcription"
+                android:backgroundTint="#FF9800"
+            />
+
+        <Button
+                android:id="@+id/logViewerButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:text="View Logs"
+                android:backgroundTint="#4CAF50"
+            />
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

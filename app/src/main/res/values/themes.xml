@@ -2,6 +2,7 @@
 <resources>
     <style name="Theme.Heartbeat" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="colorSurfaceVariant">@color/teal_200</item>
+        <item name="colorOnSurfaceVariant">@color/black</item>
     </style>
 </resources>
-
